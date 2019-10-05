@@ -1,13 +1,11 @@
-sleep 100
 DATE=`date +%Y-%m-%d-%H:%M:%S`
 tries=0
-echo --- my_watchdog start ---
+echo --- my watchdog start ---
 while [[ $tries -lt 5 ]]
 do
         if /bin/ping -c 1 8.8.8.8 >/dev/null
         then
                 echo --- exit ---
-#               echo $DATE OK >>my_watchdog.log
                 exit 0
         fi
         tries=$((tries+1))
