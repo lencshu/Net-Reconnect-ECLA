@@ -10,7 +10,6 @@ do
         fi
         tries=$((tries+1))
         sleep 10
-#       echo $DATE tries: $tries >>my_watchdog.log
 done
 echo $DATE network est encule >>net.log
 /etc/init.d/network restart

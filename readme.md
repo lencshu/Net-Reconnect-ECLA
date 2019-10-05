@@ -1,6 +1,8 @@
 # 断网自动重连脚本 (ECLA网络回血buff)
 
-> 适当加了一些科普，希望不吓退小白
+> 适当加了一些科普，希望不要吓退小白
+
+[TOC]
 
 ## 1. 简介
 
@@ -24,13 +26,18 @@
 
 ### 1.2 思路简介
 本方案首先蹭网ECLA (一级路由)，然后`NAT`自组内部局域网 (二级路由)，
-同时内建shell脚本，ping 8.8.8.8 (图个吉利，Google提供的免费DNS服务器的IP地址，可自己更改) 检查网络连接状况，如果每个10秒连续5次尝试还是不通，则重新连接网络
-并通过crontab调用脚本，每隔3分钟运行一次
+然后通过shell脚本ping 8.8.8.8 (图个吉利，Google提供的免费DNS服务器的IP地址，可自己更改) 检查网络连接状况，如果每隔10秒连续5次尝试还是不通，则重新连接网络并写入net.log文件
+同时在crontab设定每隔3分钟调用一次脚本
 
-总之，等派人来修复不如自己动手，要知道法国service après ventre的服务效率简直。。。如果不巧还是外包的话。。。
+登录路由器后输入 `cat /root/net.log`命令就能查看网络检测日志:
 
+![](res/10.png)
 
-## 2. 刷路由器 (有变砖的风险)
+(爱国敬业自由平等民主。。。)
+
+总之，等派人来修复不如自己动手，要知道法国service après ventre的服务效率简直。。。如果不巧还是找的外包的话。。。
+
+## 2. 刷路由器 (温馨提示：有变砖的风险)
 
 ### 2.1 openwrt
 
@@ -41,7 +48,7 @@
 简言之，OpenWrt是一个基于Linux的开源路由器操作系统，可以安装各种应用程序，比如科学上网等等。
 许多市面上的路由器都是基于这个改的，比如某米。
 
- ### 2.2 实操
+### 2.2 实操
 
 通过各种渠道查找路由器型号，注意版本号
 然后到 [openwrt官网](https://openwrt.org/toh/hwdata/start)去下载对应的固件
@@ -114,7 +121,7 @@
 
 接下来我们分单频和双频建内部局域网去掉网线，
 
-### 3.2.1 单频
+#### 3.2.1 单频
 
 同样在`wireless`无线界面，这次点击`add`添加按钮
 
@@ -130,7 +137,7 @@
 
 最终配置概览
 
-### 3.2.2 双频或者双网卡
+#### 3.2.2 双频或者双网卡
 
 使用一块网卡在两个网段上工作会导致最大带宽减半，但是使用两块网卡就不会这样，所以不妨将2.4G的无线信号放大成5G信号，或者两块2.4G网卡承担这两项任务，只需将网卡的点击“添加”按钮之后的配置应用到另一块网卡的区域即可。
 
@@ -155,24 +162,23 @@ vim watchDog.sh
 
 然后复制粘贴以下脚本命令
 
-~~~sh
-DATE=`date +%Y-%m-%d-%H:%M:%S`
-tries=0
-echo --- my watchdog start ---
-while [[ $tries -lt 5 ]]
-do
-        if /bin/ping -c 1 8.8.8.8 >/dev/null
-        then
-                echo --- exit ---
-                exit 0
-        fi
-        tries=$((tries+1))
-        sleep 10
-#       echo $DATE tries: $tries >>my_watchdog.log
-done
-echo $DATE network est encule >>net.log
-/etc/init.d/network restart
-~~~
+    ~~~sh
+    DATE=`date +%Y-%m-%d-%H:%M:%S`
+    tries=0
+    echo --- my watchdog start ---
+    while [[ $tries -lt 5 ]]
+    do
+            if /bin/ping -c 1 8.8.8.8 >/dev/null
+            then
+                    echo --- exit ---
+                    exit 0
+            fi
+            tries=$((tries+1))
+            sleep 10
+    done
+    echo $DATE network est encule >>net.log
+    /etc/init.d/network restart
+    ~~~
 
 结果如下
 
